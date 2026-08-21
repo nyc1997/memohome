@@ -86,35 +86,65 @@ export default async function Home({
         />
       ))}
 
-      <div className="pagination">
-        {currentPage > 1 && (
-          <Link
-            href={
-              category
-                ? `/?category=${category}&page=${currentPage - 1}`
-                : `/?page=${currentPage - 1}`
-            }
-          >
-            이전
-          </Link>
-        )}
+  <div className="pagination">
 
-        <span>
-          {currentPage} / {totalPages}
-        </span>
+    {currentPage > 1 && (
+      <Link
+        href={
+          category
+            ? `/?category=${category}&page=${currentPage - 1}`
+            : `/?page=${currentPage - 1}`
+        }
+        className="action-button"
+      >
+        이전
+      </Link>
+    )}
 
-        {currentPage < totalPages && (
-          <Link
-            href={
-              category
-                ? `/?category=${category}&page=${currentPage + 1}`
-                : `/?page=${currentPage + 1}`
-            }
-          >
-            다음
-          </Link>
-        )}
-      </div>
+    <div className="pagination-pages">
+
+      {Array.from(
+        { length: totalPages },
+        (_, index) => index + 1
+      ).map((pageNumber) => (
+
+        <Link
+          key={pageNumber}
+          href={
+            category
+              ? `/?category=${category}&page=${pageNumber}`
+              : `/?page=${pageNumber}`
+          }
+          className={
+            pageNumber === currentPage
+              ? 'pagination-current'
+              : 'pagination-number'
+          }
+        >
+          {pageNumber}.
+        </Link>
+
+      ))}
+
+    </div>
+
+    {currentPage < totalPages && (
+      <Link
+        href={
+          category
+            ? `/?category=${category}&page=${currentPage + 1}`
+            : `/?page=${currentPage + 1}`
+        }
+        className="action-button"
+      >
+        다음
+      </Link>
+    )}
+
+  </div>
+
+
+
     </main>
   )
 }

@@ -377,24 +377,50 @@
 
     /* pagenation */
     .pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-    margin: 30px 0;
-  }
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      margin-top: 30px;
+    }
 
-  .pagination a {
-    padding: 8px 14px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    text-decoration: none;
-    color: #333;
-  }
+    .pagination-pages {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
 
-  .pagination span {
-    font-weight: bold;
-  }
+    .pagination-number,
+    .pagination-current {
+      color: #333;
+      text-decoration: none;
+    }
+
+    .pagination-current {
+      font-weight: bold;
+    }
+
+    .pagination-number:hover,
+    .pagination-current:hover {
+      text-decoration: none;
+    }
+
+
+
+    .pagination-button {
+      display: inline-block;
+      padding: 8px 14px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      background: white;
+      color: #333;
+      text-decoration: none;
+    }
+
+    .pagination-button:hover {
+      background: #f5f5f5;
+    }
+
 
   /* 이미지 파일 보기  */
   .note-file {
@@ -798,7 +824,7 @@
     margin: 8px 10px;
   }
 
-  
+
 
   button {
     cursor: pointer;
