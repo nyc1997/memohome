@@ -79,10 +79,11 @@ export default async function Home({
         total : {count}
       </div>
 
-      {notes.map((note) => (
+      {notes.map((note, index) => (
         <NoteCard
           key={note.id}
           note={note}
+          number={from + index + 1}
         />
       ))}
 

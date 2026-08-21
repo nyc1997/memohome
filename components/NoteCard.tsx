@@ -5,9 +5,10 @@ import AttachmentImage from '../app/notes/edit/AttachmentImage'
 
 type NoteCardProps = {
   note: any
+  number: number
 }
 
-export default function NoteCard({ note }: NoteCardProps) {
+export default function NoteCard({ note, number }: NoteCardProps) {
 
   const isImage = note.file_url?.match(
     /\.(jpg|jpeg|png|gif|webp|bmp)$/i
@@ -18,7 +19,7 @@ export default function NoteCard({ note }: NoteCardProps) {
 
       <h2>
         <Link href={`/notes/${note.id}`}>
-          {note.title}
+          {number}. {note.title}
         </Link>
       </h2>
 

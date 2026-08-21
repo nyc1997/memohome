@@ -134,10 +134,11 @@ export default function SearchPage() {
           검색 결과가 없습니다.
         </p>
       ) : (
-        results.map((note) => (
+        results.map((note, index) => (
           <NoteCard
             key={note.id}
             note={note}
+            number={index + 1}
           />
         ))
       )}
