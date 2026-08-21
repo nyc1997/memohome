@@ -9,7 +9,6 @@ type AudioVisualizerProps = {
 export default function AudioVisualizer({
   audioRef,
 }: AudioVisualizerProps) {
-
   const canvasRef =
     useRef<HTMLCanvasElement | null>(null)
 
@@ -23,7 +22,6 @@ export default function AudioVisualizer({
     useRef<MediaElementAudioSourceNode | null>(null)
 
   useEffect(() => {
-
     const audio = audioRef.current
     const canvas = canvasRef.current
 
@@ -40,7 +38,6 @@ export default function AudioVisualizer({
 
     // 이미 연결되어 있으면 다시 만들지 않는다.
     if (!audioContextRef.current) {
-
       const audioContext =
         new AudioContext()
 
@@ -70,45 +67,84 @@ export default function AudioVisualizer({
         source
     }
 
-    const analyser =
+    /*
+     * 여기서 analyser를 한 번 확정한다.
+     * 이후 draw()에서는 이 activeAnalyser만 사용한다.
+     */
+    const activeAnalyser =
       analyserRef.current
 
-    if (!analyser) {
+    if (!activeAnalyser) {
       return
     }
 
     const bufferLength =
-      analyser.frequencyBinCount
-
-    const dataArray =
-      new Uint8Array(bufferLength)
+      activeAnalyser.frequencyBinCount
 
     let animationId = 0
 
-    /*  오실로 스코프
     function draw() {
-
       animationId =
         requestAnimationFrame(draw)
 
-      analyser.getByteTimeDomainData(
-        dataArray
+      const currentCanvas =
+        canvasRef.current
+
+      if (!currentCanvas) {
+        return
+      }
+
+      const currentCtx =
+        currentCanvas.getContext('2d')
+
+      if (!currentCtx) {
+        return
+      }
+
+      // 시간 영역 데이터
+      const timeData =
+        new Uint8Array(bufferLength)
+
+      const currentAnalyser =
+        analyserRef.current
+
+      if (!currentAnalyser) {
+        return
+      }
+
+      currentAnalyser.getByteTimeDomainData(
+        timeData
+      )
+
+      // 주파수 데이터
+      const frequencyData =
+        new Uint8Array(bufferLength)
+
+      currentAnalyser.getByteFrequencyData(
+        frequencyData
       )
 
       const width =
-        canvas.width
+        currentCanvas.width
 
       const height =
-        canvas.height
+        currentCanvas.height
 
-      ctx.clearRect(
+      currentCtx.clearRect(
         0,
         0,
         width,
         height
       )
 
-      ctx.beginPath()
+      // =================================
+      // 위쪽 : 파형
+      // =================================
+
+      const waveformHeight =
+        height * 0.55
+
+      currentCtx.beginPath()
 
       const sliceWidth =
         width / bufferLength
@@ -120,312 +156,82 @@ export default function AudioVisualizer({
         i < bufferLength;
         i++
       ) {
-
         const v =
-          dataArray[i] / 128.0
+          timeData[i] / 128.0
 
         const y =
-          (v * height) / 2
+          (v * waveformHeight) / 2
 
         if (i === 0) {
-
-          ctx.moveTo(x, y)
-
+          currentCtx.moveTo(
+            x,
+            y
+          )
         } else {
-
-          ctx.lineTo(x, y)
-
+          currentCtx.lineTo(
+            x,
+            y
+          )
         }
 
         x += sliceWidth
       }
 
-      ctx.stroke()
-    }
-  */
-    /*   막대그래프
-    function draw() {
+      currentCtx.stroke()
 
-      animationId =
-        requestAnimationFrame(draw)
+      // =================================
+      // 아래쪽 : 이퀄라이저
+      // =================================
 
-      analyser.getByteFrequencyData(
-        dataArray
-      )
+      const eqTop =
+        waveformHeight + 10
 
-      const width =
-        canvas.width
+      const eqHeight =
+        height - eqTop
 
-      const height =
-        canvas.height
+      const barCount =
+        64
 
-      ctx.clearRect(
-        0,
-        0,
-        width,
-        height
-      )
-
-      const barCount = 64
+      const gap = 3
 
       const barWidth =
-        width / barCount - 3
+        width / barCount - gap
 
       for (
         let i = 0;
         i < barCount;
         i++
       ) {
-
-        const index =
+        const dataIndex =
           Math.floor(
-            i * bufferLength / barCount
+            i *
+            bufferLength /
+            barCount
           )
 
         const value =
-          dataArray[index]
+          frequencyData[dataIndex] / 255
 
         const barHeight =
-          (value / 255) * height
+          value * eqHeight
 
-        const x =
-          i * (barWidth + 3)
+        const barX =
+          i *
+          (barWidth + gap)
 
-        const y =
+        const barY =
           height - barHeight
 
-        ctx.fillRect(
-          x,
-          y,
+        currentCtx.fillRect(
+          barX,
+          barY,
           barWidth,
           barHeight
         )
       }
     }
-  */
-    /*원형 파형
-    function draw() {
 
-      animationId =
-        requestAnimationFrame(draw)
-
-      analyser.getByteFrequencyData(
-        dataArray
-      )
-
-      const width =
-        canvas.width
-
-      const height =
-        canvas.height
-
-      ctx.clearRect(
-        0,
-        0,
-        width,
-        height
-      )
-
-      const centerX =
-        width / 2
-
-      const centerY =
-        height / 2
-
-      const baseRadius =
-        Math.min(width, height) * 0.28
-
-      const pointCount = 128
-
-      ctx.beginPath()
-
-      for (
-        let i = 0;
-        i <= pointCount;
-        i++
-      ) {
-
-        const angle =
-          (i / pointCount) *
-          Math.PI *
-          2
-
-        const dataIndex =
-          Math.floor(
-            i * bufferLength / pointCount
-          )
-
-        const value =
-          dataArray[dataIndex] / 255
-
-        const radius =
-          baseRadius +
-          value * 60
-
-        const x =
-          centerX +
-          Math.cos(angle) * radius
-
-        const y =
-          centerY +
-          Math.sin(angle) * radius
-
-        if (i === 0) {
-
-          ctx.moveTo(x, y)
-
-        } else {
-
-          ctx.lineTo(x, y)
-
-        }
-      }
-
-      ctx.closePath()
-
-      ctx.stroke()
-    }
-  */
-
-function draw() {
-
-  animationId =
-    requestAnimationFrame(draw)
-
-  // 시간 영역 데이터
-  const timeData =
-    new Uint8Array(bufferLength)
-
-  analyser.getByteTimeDomainData(
-    timeData
-  )
-
-  // 주파수 데이터
-  const frequencyData =
-    new Uint8Array(bufferLength)
-
-  analyser.getByteFrequencyData(
-    frequencyData
-  )
-
-  const width =
-    canvas.width
-
-  const height =
-    canvas.height
-
-  ctx.clearRect(
-    0,
-    0,
-    width,
-    height
-  )
-
-
-  // =================================
-  // 위쪽 : 파형
-  // =================================
-
-  const waveformHeight =
-    height * 0.55
-
-  ctx.beginPath()
-
-  const sliceWidth =
-    width / bufferLength
-
-  let x = 0
-
-  for (
-    let i = 0;
-    i < bufferLength;
-    i++
-  ) {
-
-    const v =
-      timeData[i] / 128.0
-
-    const y =
-      (v * waveformHeight) / 2
-
-    if (i === 0) {
-
-      ctx.moveTo(
-        x,
-        y
-      )
-
-    } else {
-
-      ctx.lineTo(
-        x,
-        y
-      )
-
-    }
-
-    x += sliceWidth
-  }
-
-  ctx.stroke()
-
-
-  // =================================
-  // 아래쪽 : 이퀄라이저
-  // =================================
-
-  const eqTop =
-    waveformHeight + 10
-
-  const eqHeight =
-    height - eqTop
-
-  const barCount =
-    64
-
-  const gap = 3
-
-  const barWidth =
-    width / barCount - gap
-
-  for (
-    let i = 0;
-    i < barCount;
-    i++
-  ) {
-
-    const dataIndex =
-      Math.floor(
-        i *
-        bufferLength /
-        barCount
-      )
-
-    const value =
-      frequencyData[dataIndex] / 255
-
-    const barHeight =
-      value * eqHeight
-
-    const barX =
-      i *
-      (barWidth + gap)
-
-    const barY =
-      height - barHeight
-
-    ctx.fillRect(
-      barX,
-      barY,
-      barWidth,
-      barHeight
-    )
-  }
-}
-
-/*****************************************************/
     function resumeAudio() {
-
       const audioContext =
         audioContextRef.current
 
@@ -445,7 +251,6 @@ function draw() {
     draw()
 
     return () => {
-
       cancelAnimationFrame(
         animationId
       )
@@ -455,7 +260,6 @@ function draw() {
         resumeAudio
       )
     }
-
   }, [audioRef])
 
   return (

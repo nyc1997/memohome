@@ -1,14 +1,16 @@
-
-'use client'    /* edit / page.tsx */
+'use client'
 
 import { useEffect, useState } from 'react'
 import { supabase } from '../../../../lib/supabase'
 import { useParams, useRouter } from 'next/navigation'
 import Header from '../../../../components/Header'
 
+type Category = {
+  id: number
+  name: string
+}
 
 export default function EditPage() {
-
   const params = useParams()
   const router = useRouter()
 
@@ -17,10 +19,9 @@ export default function EditPage() {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [category, setCategory] = useState('')
-  const [categories, setCategories] = useState([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [errorField, setErrorField] = useState('')
   const [toast, setToast] = useState('')
-
 
   function showToast(message: string) {
     setToast(message)
@@ -30,11 +31,8 @@ export default function EditPage() {
     }, 2000)
   }
 
-
   useEffect(() => {
-
     async function loadNote() {
-
       const { data, error } = await supabase
         .from('notes')
         .select('*')
@@ -54,14 +52,10 @@ export default function EditPage() {
     }
 
     loadNote()
-
   }, [id])
 
-
   useEffect(() => {
-
     const getCategories = async () => {
-
       const { data, error } = await supabase
         .from('categories')
         .select('*')
@@ -75,15 +69,11 @@ export default function EditPage() {
     }
 
     getCategories()
-
   }, [])
 
-
   async function updateNote() {
-
     setErrorField('')
     setToast('')
-
 
     if (!title.trim()) {
       setErrorField('title')
@@ -91,13 +81,11 @@ export default function EditPage() {
       return
     }
 
-
     if (!content.trim()) {
       setErrorField('content')
       showToast('내용을 입력해주세요.')
       return
     }
-
 
     if (!category) {
       setErrorField('category')
@@ -105,37 +93,30 @@ export default function EditPage() {
       return
     }
 
-
     const { error } = await supabase
       .from('notes')
       .update({
         title,
         content,
-        category_id: Number(category)
+        category_id: Number(category),
       })
       .eq('id', id)
-
 
     if (error) {
       showToast(error.message)
       return
     }
 
-
     showToast('수정 완료')
-
 
     setTimeout(() => {
       router.push(`/notes/${id}`)
     }, 2500)
   }
 
-
   return (
     <main className="container">
-
       <Header />
-
 
       {toast && (
         <div className="toast">
@@ -143,14 +124,10 @@ export default function EditPage() {
         </div>
       )}
 
-
       <section className="write-form">
-
         <h1>수정</h1>
 
-
         <div className="form-group">
-
           <label>제목</label>
 
           <input
@@ -158,21 +135,16 @@ export default function EditPage() {
             placeholder="제목"
             value={title}
             onChange={(e) => {
-
               setTitle(e.target.value)
 
               if (errorField === 'title') {
                 setErrorField('')
               }
-
             }}
           />
-
         </div>
 
-
         <div className="form-group">
-
           <label>내용</label>
 
           <textarea
@@ -180,67 +152,51 @@ export default function EditPage() {
             placeholder="내용"
             value={content}
             onChange={(e) => {
-
               setContent(e.target.value)
 
               if (errorField === 'content') {
                 setErrorField('')
               }
-
             }}
           />
-
         </div>
 
-
         <div className="form-group">
-
           <label>카테고리</label>
 
           <select
             className={errorField === 'category' ? 'input-error' : ''}
             value={category}
             onChange={(e) => {
-
               setCategory(e.target.value)
 
               if (errorField === 'category') {
                 setErrorField('')
               }
-
             }}
           >
-
             <option value="">
               카테고리 선택
             </option>
 
-
-            {categories?.map((category) => (
-
+            {categories.map((category) => (
               <option
                 key={category.id}
                 value={category.id}
               >
                 {category.name}
               </option>
-
             ))}
-
           </select>
-
         </div>
 
-
         <div className="write-actions">
-
           <button
             className="action-button"
             onClick={updateNote}
           >
             수정
           </button>
-
 
           <button
             type="button"
@@ -249,12 +205,8 @@ export default function EditPage() {
           >
             취소
           </button>
-
         </div>
-
       </section>
-
     </main>
   )
 }
-

@@ -1,5 +1,4 @@
-
-/* edit / page.tsx */
+/* app/notes/[id]/page.tsx */
 
 import DeleteButton from './DeleteButton'
 import { supabase } from '../../../lib/supabase'
@@ -14,7 +13,6 @@ export default async function NotePage({
 }: {
   params: Promise<{ id: string }>
 }) {
-
   const { id } = await params
 
   const { data: note, error } = await supabase
@@ -37,7 +35,6 @@ export default async function NotePage({
   )
 
   return (
-
     <main className="container">
 
       <Header />
@@ -94,7 +91,9 @@ export default async function NotePage({
             수정
           </Link>
 
-          <DeleteButton />
+          <DeleteButton
+            id={id}
+          />
 
           <Link
             href="/"
@@ -110,4 +109,3 @@ export default async function NotePage({
     </main>
   )
 }
-

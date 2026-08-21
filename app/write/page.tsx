@@ -6,13 +6,19 @@ import { supabase } from '../../lib/supabase'
 import Header from '../../components/Header'
 import { useRouter } from 'next/navigation'
 
+
+  type Category = {
+    id: number
+    name: string
+  }
+  
 export default function WritePage() {
   const router = useRouter()
 
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [category, setCategory] = useState('')
-  const [categories, setCategories] = useState([])
+  const [categories, setCategories] = useState<Category[]>([])
 
   const [errorField, setErrorField] = useState('')
   const [toast, setToast] = useState('')
@@ -61,16 +67,33 @@ export default function WritePage() {
 
     let fileUrl = ''
 
+    // =========================
+    // 파일 업로드
+    // =========================
     if (file) {
 
-      const fileName = `${Date.now()}-${file.name}`
+      // 원본 파일의 확장자만 가져온다.
+      const extension =
+        file.name.includes('.')
+          ? file.name.split('.').pop()?.toLowerCase()
+          : ''
 
-      const { data: uploadData, error: uploadError } = await supabase
+      // Storage에는 한글/공백이 들어가지 않는
+      // 안전한 파일명만 사용한다.
+      const fileName = extension
+        ? `${Date.now()}-${crypto.randomUUID()}.${extension}`
+        : `${Date.now()}-${crypto.randomUUID()}`
+
+      const {
+        data: uploadData,
+        error: uploadError
+      } = await supabase
         .storage
         .from('attachments')
         .upload(fileName, file)
 
       if (uploadError) {
+        console.error('파일 업로드 오류:', uploadError)
         showToast(uploadError.message)
         setSaving(false)
         return
@@ -78,17 +101,21 @@ export default function WritePage() {
 
       console.log('업로드 결과:', uploadData)
 
-      const { data } = supabase
+      const {
+        data: publicUrlData
+      } = supabase
         .storage
         .from('attachments')
         .getPublicUrl(fileName)
 
-      fileUrl = data.publicUrl
+      fileUrl = publicUrlData.publicUrl
 
       console.log('파일 URL:', fileUrl)
     }
 
-    console.log('파일 URL:', fileUrl)
+    // =========================
+    // 노트 저장
+    // =========================
 
     const { error } = await supabase
       .from('notes')
@@ -100,6 +127,7 @@ export default function WritePage() {
       })
 
     if (error) {
+      console.error('노트 저장 오류:', error)
       showToast(error.message)
       setSaving(false)
       return

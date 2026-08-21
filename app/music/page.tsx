@@ -13,36 +13,69 @@ type TrackInfo = {
   lyrics?: string
 }
 
-export default function MusicPage() {
-  const audioRef = useRef<HTMLAudioElement | null>(null)
+type LyricItem =
+  | string
+  | {
+      text?: string
+    }
 
-  const [playlist, setPlaylist] = useState<string[]>([])
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [trackInfo, setTrackInfo] = useState<TrackInfo>({})
-  const [loadingInfo, setLoadingInfo] = useState(false)
+export default function MusicPage() {
+  const audioRef =
+    useRef<HTMLAudioElement | null>(null)
+
+  const [playlist, setPlaylist] =
+    useState<string[]>([])
+
+  const [currentIndex, setCurrentIndex] =
+    useState(0)
+
+  const [trackInfo, setTrackInfo] =
+    useState<TrackInfo>({})
+
+  const [loadingInfo, setLoadingInfo] =
+    useState(false)
 
   // =========================
   // M3U 읽기
   // =========================
+
   useEffect(() => {
     const loadPlaylist = async () => {
       try {
-        const response = await fetch('/music/summer/test.m3u')
+        const response =
+          await fetch(
+            '/music/summer/test.m3u'
+          )
 
         if (!response.ok) {
-          throw new Error('M3U 파일을 읽을 수 없습니다.')
+          throw new Error(
+            'M3U 파일을 읽을 수 없습니다.'
+          )
         }
 
-        const text = await response.text()
+        const text =
+          await response.text()
 
-        const files = text
-          .split(/\r?\n/)
-          .map(line => line.replace(/^\uFEFF/, '').trim())
-          .filter(line => line && !line.startsWith('#'))
+        const files =
+          text
+            .split(/\r?\n/)
+            .map(line =>
+              line
+                .replace(/^\uFEFF/, '')
+                .trim()
+            )
+            .filter(
+              line =>
+                line &&
+                !line.startsWith('#')
+            )
 
         setPlaylist(files)
       } catch (error) {
-        console.error('M3U 로드 오류:', error)
+        console.error(
+          'M3U 로드 오류:',
+          error
+        )
       }
     }
 
@@ -52,48 +85,68 @@ export default function MusicPage() {
   // =========================
   // MP3 메타데이터 읽기
   // =========================
+
   useEffect(() => {
-    if (playlist.length === 0) return
+    if (playlist.length === 0) {
+      return
+    }
 
     const loadMetadata = async () => {
       setLoadingInfo(true)
       setTrackInfo({})
 
       try {
-        const file = playlist[currentIndex]
+        const file =
+          playlist[currentIndex]
 
-        const url = `/music/summer/${encodeURIComponent(file)}`
+        const url =
+          `/music/summer/${encodeURIComponent(file)}`
 
-        const response = await fetch(url)
+        const response =
+          await fetch(url)
 
         if (!response.ok) {
-          throw new Error('MP3 파일을 읽을 수 없습니다.')
+          throw new Error(
+            'MP3 파일을 읽을 수 없습니다.'
+          )
         }
 
-        const blob = await response.blob()
+        const blob =
+          await response.blob()
 
-        const metadata = await parseBlob(blob)
+        const metadata =
+          await parseBlob(blob)
 
-        const common = metadata.common
+        const common =
+          metadata.common
 
         // =========================
-        // 깨진 문자열 검사
+        // 문자열 검증
         // =========================
-        const isValidText = (value?: string) => {
-          if (!value) return false
 
-          const text = value.trim()
+        const isValidText = (
+          value?: string
+        ) => {
+          if (!value) {
+            return false
+          }
 
-          if (!text) return false
+          const text =
+            value.trim()
 
-          // 대체 문자(�)가 들어 있으면
-          // 인코딩이 깨진 것으로 판단
-          if (text.includes('�')) return false
+          if (!text) {
+            return false
+          }
 
-          // 제어문자가 많이 들어간 경우
-          const controlCharacters = text.match(
-            /[\x00-\x08\x0B\x0C\x0E-\x1F]/g
-          )
+          // 깨진 인코딩으로 보이는 문자열
+          if (text.includes('占')) {
+            return false
+          }
+
+          const controlCharacters =
+            text.match(
+              /[\x00-\x08\x0B\x0C\x0E-\x1F]/g
+            )
 
           if (
             controlCharacters &&
@@ -106,73 +159,123 @@ export default function MusicPage() {
         }
 
         // =========================
-        // 앨범아트
+        // 앨범 이미지
         // =========================
-        let pictureUrl: string | undefined
+
+        let pictureUrl:
+          | string
+          | undefined
 
         if (
           common.picture &&
           common.picture.length > 0
         ) {
-          const picture = common.picture[0]
+          const picture =
+            common.picture[0]
 
-          const pictureBlob = new Blob(
-            [picture.data],
-            {
-              type: picture.format
-            }
-          )
+          /*
+           * Buffer<ArrayBufferLike>를
+           * 일반 ArrayBuffer로 복사한다.
+           *
+           * Node Buffer와 브라우저 BlobPart 사이의
+           * TypeScript 타입 충돌을 피하기 위한 처리.
+           */
+          const sourceData =
+            new Uint8Array(
+              picture.data
+            )
+
+          const imageData =
+            new Uint8Array(
+              sourceData.byteLength
+            )
+
+          imageData.set(sourceData)
+
+          const pictureBlob =
+            new Blob(
+              [imageData.buffer],
+              {
+                type:
+                  picture.format
+              }
+            )
 
           pictureUrl =
-            URL.createObjectURL(pictureBlob)
+            URL.createObjectURL(
+              pictureBlob
+            )
         }
 
         // =========================
         // 가사
         // =========================
-        let lyricsText: string | undefined
+
+        let lyricsText:
+          | string
+          | undefined
 
         if (
           common.lyrics &&
           common.lyrics.length > 0
         ) {
-          const text = common.lyrics
-            .map(item => {
-              if (typeof item === 'string') {
-                return item
-              }
+          /*
+           * music-metadata-browser의 lyrics 타입을
+           * 여기서 우리가 사용하는 형태로 명확하게 지정한다.
+           */
+          const lyricItems =
+            common.lyrics as unknown as LyricItem[]
 
-              return item.text || ''
-            })
-            .filter(Boolean)
-            .join('\n\n')
+          const text =
+            lyricItems
+              .map(item => {
+                if (
+                  typeof item === 'string'
+                ) {
+                  return item
+                }
 
-          if (isValidText(text)) {
+                return item.text ?? ''
+              })
+              .filter(
+                value =>
+                  value.length > 0
+              )
+              .join('\n\n')
+
+          if (
+            isValidText(text)
+          ) {
             lyricsText = text
           }
         }
 
         // =========================
-        // 메타데이터
+        // 메타데이터 저장
         // =========================
+
         setTrackInfo({
-          title: isValidText(common.title)
-            ? common.title
-            : undefined,
+          title:
+            isValidText(common.title)
+              ? common.title
+              : undefined,
 
-          artist: isValidText(common.artist)
-            ? common.artist
-            : undefined,
+          artist:
+            isValidText(common.artist)
+              ? common.artist
+              : undefined,
 
-          album: isValidText(common.album)
-            ? common.album
-            : undefined,
+          album:
+            isValidText(common.album)
+              ? common.album
+              : undefined,
 
-          picture: pictureUrl,
+          picture:
+            pictureUrl,
 
-          lyrics: lyricsText
+          lyrics:
+            lyricsText
         })
-
       } catch (error) {
         console.error(
           'MP3 메타데이터 읽기 오류:',
@@ -186,26 +289,45 @@ export default function MusicPage() {
     }
 
     loadMetadata()
-  }, [playlist, currentIndex])
+  }, [
+    playlist,
+    currentIndex
+  ])
 
   // =========================
   // 현재 곡 재생
   // =========================
+
   useEffect(() => {
-    const audio = audioRef.current
+    const audio =
+      audioRef.current
 
-    if (!audio || playlist.length === 0) return
+    if (
+      !audio ||
+      playlist.length === 0
+    ) {
+      return
+    }
 
-    const file = playlist[currentIndex]
+    const file =
+      playlist[currentIndex]
 
-    audio.src = `/music/summer/${encodeURIComponent(file)}`
+    audio.src =
+      `/music/summer/${encodeURIComponent(file)}`
+
     audio.load()
-  }, [playlist, currentIndex])
+  }, [
+    playlist,
+    currentIndex
+  ])
 
   // =========================
   // 곡 선택
   // =========================
-  const playSong = (index: number) => {
+
+  const playSong = (
+    index: number
+  ) => {
     setCurrentIndex(index)
 
     setTimeout(() => {
@@ -216,22 +338,36 @@ export default function MusicPage() {
   // =========================
   // 다음 곡
   // =========================
+
   const nextSong = () => {
-    if (playlist.length === 0) return
+    if (
+      playlist.length === 0
+    ) {
+      return
+    }
 
     setCurrentIndex(prev =>
-      prev + 1 < playlist.length ? prev + 1 : 0
+      prev + 1 < playlist.length
+        ? prev + 1
+        : 0
     )
   }
 
   // =========================
   // 이전 곡
   // =========================
+
   const previousSong = () => {
-    if (playlist.length === 0) return
+    if (
+      playlist.length === 0
+    ) {
+      return
+    }
 
     setCurrentIndex(prev =>
-      prev - 1 >= 0 ? prev - 1 : playlist.length - 1
+      prev - 1 >= 0
+        ? prev - 1
+        : playlist.length - 1
     )
   }
 
@@ -240,18 +376,26 @@ export default function MusicPage() {
 
       <Header />
 
-      <div style={{ padding: '30px' }}>
+      <div
+        style={{
+          padding: '30px'
+        }}
+      >
 
-        <h1>🎶 음악 플레이어</h1>
+        <h1>
+          여름 음악 플레이어
+        </h1>
 
         {/* =========================
             앨범아트 / 음악 정보
            ========================= */}
 
-        {(trackInfo.picture ||
+        {(
+          trackInfo.picture ||
           trackInfo.title ||
           trackInfo.artist ||
-          trackInfo.album) && (
+          trackInfo.album
+        ) && (
 
           <div
             style={{
@@ -266,10 +410,15 @@ export default function MusicPage() {
           >
 
             {/* 앨범 이미지 */}
+
             {trackInfo.picture && (
               <img
                 src={trackInfo.picture}
-                alt={trackInfo.album || trackInfo.title || '앨범 이미지'}
+                alt={
+                  trackInfo.album ||
+                  trackInfo.title ||
+                  '앨범 이미지'
+                }
                 style={{
                   width: '220px',
                   height: '220px',
@@ -280,27 +429,39 @@ export default function MusicPage() {
             )}
 
             {/* 음악 정보 */}
-            {(trackInfo.title ||
+
+            {(
+              trackInfo.title ||
               trackInfo.artist ||
-              trackInfo.album) && (
+              trackInfo.album
+            ) && (
 
               <div>
 
                 {trackInfo.title && (
-                  <h2 style={{ margin: '0 0 10px 0' }}>
+                  <h2
+                    style={{
+                      margin:
+                        '0 0 10px 0'
+                    }}
+                  >
                     {trackInfo.title}
                   </h2>
                 )}
 
                 {trackInfo.artist && (
-                  <div style={{ marginBottom: '6px' }}>
-                    👤 {trackInfo.artist}
+                  <div
+                    style={{
+                      marginBottom: '6px'
+                    }}
+                  >
+                    가수 · {trackInfo.artist}
                   </div>
                 )}
 
                 {trackInfo.album && (
                   <div>
-                    💿 {trackInfo.album}
+                    앨범 · {trackInfo.album}
                   </div>
                 )}
 
@@ -310,9 +471,14 @@ export default function MusicPage() {
           </div>
         )}
 
-        {/* 메타데이터가 없는 경우 */}
+        {/* 메타데이터 로딩 */}
+
         {loadingInfo && (
-          <div style={{ margin: '15px 0' }}>
+          <div
+            style={{
+              margin: '15px 0'
+            }}
+          >
             음악 정보를 읽는 중...
           </div>
         )}
@@ -324,7 +490,9 @@ export default function MusicPage() {
         <audio
           ref={audioRef}
           controls
-          style={{ width: '100%' }}
+          style={{
+            width: '100%'
+          }}
           onEnded={nextSong}
         />
 
@@ -336,31 +504,49 @@ export default function MusicPage() {
             버튼
            ========================= */}
 
-        <div style={{ marginTop: '20px' }}>
+        <div
+          style={{
+            marginTop: '20px'
+          }}
+        >
 
           <button
-            onClick={previousSong}
-            style={{ marginRight: '10px' }}
+            onClick={
+              previousSong
+            }
+            style={{
+              marginRight: '10px'
+            }}
           >
-            ⏮ 이전
+            이전
           </button>
 
           <button
-            onClick={() => audioRef.current?.play()}
-            style={{ marginRight: '10px' }}
+            onClick={() =>
+              audioRef.current?.play()
+            }
+            style={{
+              marginRight: '10px'
+            }}
           >
-            ▶ 재생
+            재생
           </button>
 
           <button
-            onClick={() => audioRef.current?.pause()}
-            style={{ marginRight: '10px' }}
+            onClick={() =>
+              audioRef.current?.pause()
+            }
+            style={{
+              marginRight: '10px'
+            }}
           >
-            ⏸ 일시정지
+            일시정지
           </button>
 
-          <button onClick={nextSong}>
-            다음 ⏭
+          <button
+            onClick={nextSong}
+          >
+            다음
           </button>
 
         </div>
@@ -370,10 +556,17 @@ export default function MusicPage() {
            ========================= */}
 
         {playlist.length > 0 && (
-          <div style={{ marginTop: '20px' }}>
-            현재 곡:{' '}
+          <div
+            style={{
+              marginTop: '20px'
+            }}
+          >
+            현재 곡{' '}
             <strong>
-              {trackInfo.title || playlist[currentIndex]}
+              {
+                trackInfo.title ||
+                playlist[currentIndex]
+              }
             </strong>
           </div>
         )}
@@ -389,16 +582,21 @@ export default function MusicPage() {
               padding: '25px',
               borderRadius: '12px',
               background: '#fafafa',
-              border: '1px solid #ddd',
+              border:
+                '1px solid #ddd',
               whiteSpace: 'pre-wrap',
               lineHeight: '1.8'
             }}
           >
-            <h2>📝 가사</h2>
+
+            <h2>
+              가사
+            </h2>
 
             <div>
               {trackInfo.lyrics}
             </div>
+
           </div>
         )}
 
@@ -406,28 +604,38 @@ export default function MusicPage() {
             재생목록
            ========================= */}
 
-        <div style={{ marginTop: '30px' }}>
+        <div
+          style={{
+            marginTop: '30px'
+          }}
+        >
 
-          <h3>재생목록</h3>
+          <h3>
+            재생목록
+          </h3>
 
-          {playlist.map((file, index) => (
-            <div
-              key={index}
-              onClick={() => playSong(index)}
-              style={{
-                padding: '10px',
-                marginBottom: '5px',
-                cursor: 'pointer',
-                background:
-                  index === currentIndex
-                    ? '#eee'
-                    : 'transparent',
-                borderRadius: '5px'
-              }}
-            >
-              {index + 1}. {file}
-            </div>
-          ))}
+          {playlist.map(
+            (file, index) => (
+              <div
+                key={index}
+                onClick={() =>
+                  playSong(index)
+                }
+                style={{
+                  padding: '10px',
+                  marginBottom: '5px',
+                  cursor: 'pointer',
+                  background:
+                    index === currentIndex
+                      ? '#eee'
+                      : 'transparent',
+                  borderRadius: '5px'
+                }}
+              >
+                {index + 1}. {file}
+              </div>
+            )
+          )}
 
         </div>
 

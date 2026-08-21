@@ -4,10 +4,8 @@
 import { supabase } from '../lib/supabase'
 import Link from 'next/link'
 import Header from '../components/Header'
-import CategoryFilter from '../components/CategoryFilter'
 import NoteCard from '../components/NoteCard'
 import NoteSearch from '../components/NoteSearch'
-
 
 export default async function Home({
   searchParams,
@@ -15,9 +13,9 @@ export default async function Home({
   searchParams: Promise<{
     category?: string
     page?: string
+    keyword?: string
   }>
 }) {
-
   const { category, page, keyword } = await searchParams
 
   const pageSize = 10
@@ -26,16 +24,17 @@ export default async function Home({
   const from = (currentPage - 1) * pageSize
   const to = from + pageSize - 1
 
-
   let query = supabase
     .from('notes')
-    .select(`
+    .select(
+      `
       *,
       categories!notes_category_id_fkey (
         name
       )
-    `, { count: 'exact' })
-
+    `,
+      { count: 'exact' }
+    )
 
   if (category) {
     query = query.eq('category_id', Number(category))
@@ -47,7 +46,6 @@ export default async function Home({
     )
   }
 
-
   const {
     data: notes,
     error,
@@ -56,36 +54,30 @@ export default async function Home({
     .order('created_at', { ascending: false })
     .range(from, to)
 
-
   const { data: categories } = await supabase
     .from('categories')
     .select('*')
     .order('id')
 
-
   if (error) {
     return <div>오류: {error.message}</div>
   }
 
-
   const totalPages = Math.ceil((count || 0) / pageSize)
-
 
   return (
     <main className="container">
-
       <Header />
 
       <NoteSearch
         categories={categories || []}
       />
 
-      <hr />      
+      <hr />
+
       <div>
-        total : {count} 
+        total : {count}
       </div>
-
-
 
       {notes.map((note) => (
         <NoteCard
@@ -94,9 +86,7 @@ export default async function Home({
         />
       ))}
 
-
       <div className="pagination">
-
         {currentPage > 1 && (
           <Link
             href={
@@ -109,11 +99,9 @@ export default async function Home({
           </Link>
         )}
 
-
         <span>
           {currentPage} / {totalPages}
         </span>
-
 
         {currentPage < totalPages && (
           <Link
@@ -126,10 +114,7 @@ export default async function Home({
             다음
           </Link>
         )}
-
       </div>
-
     </main>
   )
 }
-
