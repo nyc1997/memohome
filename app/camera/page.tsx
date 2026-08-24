@@ -13,6 +13,9 @@ export default function CameraPage() {
   const [photo, setPhoto] = useState('')
   const [error, setError] = useState('')
 
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>(
+  'environment'
+)
 
   async function startCamera() {
 
@@ -21,7 +24,9 @@ export default function CameraPage() {
       setError('')
 
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
+        video: {
+          facingMode: facingMode
+        },
         audio: false
       })
 
@@ -90,6 +95,50 @@ export default function CameraPage() {
     setStarted(false)
   }
 
+  async function switchCamera() {
+
+    // 기존 카메라 끄기
+    if (streamRef.current) {
+      streamRef.current
+        .getTracks()
+        .forEach((track) => track.stop())
+
+      streamRef.current = null
+    }
+
+    // 카메라 방향 변경
+    const newMode =
+      facingMode === 'user'
+        ? 'environment'
+        : 'user'
+
+    setFacingMode(newMode)
+
+    try {
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: newMode
+        },
+        audio: false
+      })
+
+      streamRef.current = stream
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream
+      }
+
+    } catch (error) {
+
+      console.error(error)
+
+      setError(
+        '카메라를 전환할 수 없습니다.'
+      )
+    }
+  }
+
 
   useEffect(() => {
 
@@ -150,6 +199,14 @@ export default function CameraPage() {
               onClick={takePhoto}
             >
               📸 촬영
+            </button>
+
+            <button
+              type="button"
+              className="action-button"
+              onClick={switchCamera}
+            >
+              🔄 카메라 전환
             </button>
 
             <button
