@@ -13,9 +13,19 @@ export default function CameraPage() {
   const [photo, setPhoto] = useState('')
   const [error, setError] = useState('')
 
+  const [filter, setFilter] = useState('none')
+
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>(
   'environment'
-)
+  )
+
+  const filters = [
+    { name: '원본', value: 'none' },
+    { name: '흑백', value: 'grayscale(100%)' },
+    { name: '세피아', value: 'sepia(100%)' },
+    { name: '빈티지', value: 'contrast(90%) sepia(30%)' },
+    { name: '선명하게', value: 'contrast(120%) saturate(120%)' },
+  ]
 
   async function startCamera() {
 
@@ -62,6 +72,8 @@ export default function CameraPage() {
     const ctx = canvas.getContext('2d')
 
     if (!ctx) return
+
+    ctx.filter = filter
 
     ctx.drawImage(
       video,
@@ -165,6 +177,9 @@ export default function CameraPage() {
             autoPlay
             playsInline
             muted
+            style={{
+              filter: filter
+            }}
           />
 
         </div>
@@ -190,35 +205,53 @@ export default function CameraPage() {
 
 
         {started && (
+          <>
 
-          <div className="camera-actions">
+            <div className="filter-buttons">
 
-            <button
-              type="button"
-              className="action-button"
-              onClick={takePhoto}
-            >
-              📸 촬영
-            </button>
+              {filters.map((item) => (
 
-            <button
-              type="button"
-              className="action-button"
-              onClick={switchCamera}
-            >
-              🔄 카메라 전환
-            </button>
+                <button
+                  key={item.value}
+                  type="button"
+                  onClick={() => setFilter(item.value)}
+                  className="action-button"
+                >
+                  {item.name}
+                </button>
 
-            <button
-              type="button"
-              className="action-button"
-              onClick={stopCamera}
-            >
-              카메라 끄기
-            </button>
+              ))}
 
-          </div>
+            </div>
+            
+            <div className="camera-actions">
 
+              <button
+                type="button"
+                className="action-button"
+                onClick={takePhoto}
+              >
+                📸 촬영
+              </button>
+
+              <button
+                type="button"
+                className="action-button"
+                onClick={switchCamera}
+              >
+                🔄 카메라 전환
+              </button>
+
+              <button
+                type="button"
+                className="action-button"
+                onClick={stopCamera}
+              >
+                카메라 끄기
+              </button>
+
+            </div>
+          </>
         )}
 
 
