@@ -215,25 +215,6 @@ export default function CameraPage() {
       style={{ display: 'none' }}
     />
 
-    <div className="filter-buttons">
-
-      {filters.map((item) => (
-
-        <button
-          key={item.value}
-          type="button"
-          className={`filter-button ${
-            filter === item.value ? 'active' : ''
-          }`}
-          onClick={() => setFilter(item.value)}
-        >
-          {item.name}
-        </button>
-
-      ))}
-
-    </div>
-    
 
         {!started && (
 
