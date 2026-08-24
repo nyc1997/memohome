@@ -824,7 +824,34 @@
     margin: 8px 10px;
   }
 
+  /*  카메라 필터 */
+  .filter-buttons {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 10px 4px;
 
+    /* 한 줄 유지 */
+    flex-wrap: nowrap;
+
+    /* 스크롤바 숨기기 */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .filter-buttons::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filter-button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .filter-button.active {
+    transform: scale(1.05);
+  }
 
   button {
     cursor: pointer;

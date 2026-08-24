@@ -21,10 +21,35 @@ export default function CameraPage() {
 
   const filters = [
     { name: '원본', value: 'none' },
+
+    { name: '밝게', value: 'brightness(115%)' },
+    { name: '어둡게', value: 'brightness(85%)' },
+    { name: '선명', value: 'contrast(120%) saturate(115%)' },
+    { name: '부드럽게', value: 'contrast(90%) brightness(105%)' },
+
     { name: '흑백', value: 'grayscale(100%)' },
+    { name: '흑백 강하게', value: 'grayscale(100%) contrast(125%)' },
+
     { name: '세피아', value: 'sepia(100%)' },
-    { name: '빈티지', value: 'contrast(90%) sepia(30%)' },
-    { name: '선명하게', value: 'contrast(120%) saturate(120%)' },
+    { name: '빈티지', value: 'sepia(35%) contrast(95%) saturate(85%)' },
+    { name: '레트로', value: 'sepia(25%) contrast(110%) saturate(80%)' },
+
+    { name: '따뜻하게', value: 'sepia(15%) saturate(125%) brightness(105%)' },
+    { name: '차갑게', value: 'hue-rotate(15deg) saturate(90%)' },
+
+    { name: '강한 색감', value: 'saturate(150%) contrast(115%)' },
+    { name: '저채도', value: 'saturate(65%) contrast(105%)' },
+
+    { name: '드라마', value: 'contrast(135%) saturate(110%)' },
+    { name: '페이드', value: 'contrast(85%) brightness(110%) saturate(80%)' },
+
+    { name: '필름', value: 'contrast(110%) sepia(12%) saturate(90%)' },
+    { name: '골든', value: 'sepia(25%) saturate(135%) brightness(105%)' },
+
+    { name: '차분', value: 'saturate(75%) brightness(105%) contrast(95%)' },
+    { name: '야간', value: 'brightness(75%) contrast(115%) saturate(90%)' },
+
+    { name: '네거티브', value: 'invert(100%)' },
   ]
 
   async function startCamera() {
@@ -185,11 +210,30 @@ export default function CameraPage() {
         </div>
 
 
-        <canvas
-          ref={canvasRef}
-          style={{ display: 'none' }}
-        />
+          <canvas
+      ref={canvasRef}
+      style={{ display: 'none' }}
+    />
 
+    <div className="filter-buttons">
+
+      {filters.map((item) => (
+
+        <button
+          key={item.value}
+          type="button"
+          className={`filter-button ${
+            filter === item.value ? 'active' : ''
+          }`}
+          onClick={() => setFilter(item.value)}
+        >
+          {item.name}
+        </button>
+
+      ))}
+
+    </div>
+    
 
         {!started && (
 
@@ -201,7 +245,9 @@ export default function CameraPage() {
             카메라 시작
           </button>
 
+
         )}
+
 
 
         {started && (
@@ -209,21 +255,23 @@ export default function CameraPage() {
 
             <div className="filter-buttons">
 
-              {filters.map((item) => (
+            {filters.map((item) => (
 
-                <button
-                  key={item.value}
-                  type="button"
-                  onClick={() => setFilter(item.value)}
-                  className="action-button"
-                >
-                  {item.name}
-                </button>
+              <button
+                key={item.value}
+                type="button"
+                className={`filter-button ${
+                  filter === item.value ? 'active' : ''
+                }`}
+                onClick={() => setFilter(item.value)}
+              >
+                {item.name}
+              </button>
 
-              ))}
+            ))}
 
-            </div>
-            
+          </div>
+
             <div className="camera-actions">
 
               <button
