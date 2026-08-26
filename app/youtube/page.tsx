@@ -42,7 +42,7 @@ export default function YouTubePage() {
             border: 'none',            
           }}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-          allowfullscreen
+          allowFullScreen
         />
         
         <br/>
@@ -56,7 +56,7 @@ export default function YouTubePage() {
             border: 'none',            
           }}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-          allowfullscreen
+          allowFullScreen
         />
         
         <br/>
@@ -70,7 +70,7 @@ export default function YouTubePage() {
             border: 'none',            
           }}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-          allowfullscreen
+          allowFullScreen
         />
 
       </div>
