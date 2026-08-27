@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 
+import Header from '../../components/Header'
+
 let timerCount = 0
 let alarmCount = 0
 
@@ -42,7 +44,9 @@ export default function TimerPage() {
 
   return (
     <main className="container">
-
+      <Header />
+      <br/>
+      
       <h1>⏱️ 타이머 / 알람</h1>
 
       <div className="timer-menu">

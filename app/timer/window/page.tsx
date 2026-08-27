@@ -17,6 +17,45 @@ function Colon() {
   )
 }
 
+function Dot() {
+  return (
+    <div className="segment-dot">
+      <span />
+    </div>
+  )
+}
+
+/*
+ * 밀리초를 00:00:00.00 형태로 변환
+ */
+function formatTime(totalMilliseconds: number) {
+  const hours = Math.floor(
+    totalMilliseconds / 3600000
+  )
+
+  const minutes = Math.floor(
+    (totalMilliseconds % 3600000) / 60000
+  )
+
+  const seconds = Math.floor(
+    (totalMilliseconds % 60000) / 1000
+  )
+
+  const centiseconds = Math.floor(
+    (totalMilliseconds % 1000) / 10
+  )
+
+  return (
+    String(hours).padStart(2, '0') +
+    ':' +
+    String(minutes).padStart(2, '0') +
+    ':' +
+    String(seconds).padStart(2, '0') +
+    '.' +
+    String(centiseconds).padStart(2, '0')
+  )
+}
+
 export default function TimerWindow() {
   const searchParams = useSearchParams()
 
@@ -25,10 +64,20 @@ export default function TimerWindow() {
 
   const isAlarm = type === 'alarm'
 
-  // 기본 설정 시간: 25분
-  const [setHours, setSetHours] = useState(0)
-  const [setMinutes, setSetMinutes] = useState(25)
-  const [setSeconds, setSetSeconds] = useState(0)
+  /*
+   * =====================================================
+   * 타이머 상태
+   * =====================================================
+   */
+
+  const [setHours, setSetHours] =
+    useState(0)
+
+  const [setMinutes, setSetMinutes] =
+    useState(25)
+
+  const [setSeconds, setSetSeconds] =
+    useState(0)
 
   const [remainingSeconds, setRemainingSeconds] =
     useState(25 * 60)
@@ -36,21 +85,69 @@ export default function TimerWindow() {
   const [running, setRunning] =
     useState(false)
 
-  const [inverted, setInverted] =
-    useState(false)
-
   const [alarmOn, setAlarmOn] =
     useState(false)
 
-  const audioContextRef =
-    useRef<AudioContext | null>(null)
+  /*
+   * =====================================================
+   * 공통
+   * =====================================================
+   */
 
-  const alarmIntervalRef =
-    useRef<ReturnType<typeof setInterval> | null>(null)
+  const [inverted, setInverted] =
+    useState(false)
 
   /*
-   * 팝업 최소 크기
+   * =====================================================
+   * 스톱워치 상태
+   * =====================================================
    */
+
+  // 실제 표시 시간도 밀리초 단위
+  const [stopwatchMilliseconds, setStopwatchMilliseconds] =
+    useState(0)
+
+  const [stopwatchRunning, setStopwatchRunning] =
+    useState(false)
+
+  const [stopwatchStarted, setStopwatchStarted] =
+    useState(false)
+
+  /*
+   * 구간 기록
+   *
+   * 각각의 기록을 밀리초 단위로 저장
+   */
+  const [laps, setLaps] =
+    useState<number[]>([])
+
+  /*
+   * 실제 누적 경과시간
+   *
+   * 일시정지 / 계속을 해도
+   * 이전 시간이 유지된다.
+   */
+  const stopwatchElapsedRef =
+    useRef(0)
+
+  /*
+   * 현재 실행 구간의 시작 시각
+   */
+  const stopwatchStartRef =
+    useRef<number | null>(null)
+
+  /*
+   * 구간 기록 목록
+   */
+  const lapsRef =
+    useRef<HTMLDivElement | null>(null)
+
+  /*
+   * =====================================================
+   * 팝업 최소 크기
+   * =====================================================
+   */
+
   useEffect(() => {
     const enforceMinimumSize = () => {
       const width = window.outerWidth
@@ -83,10 +180,19 @@ export default function TimerWindow() {
   }, [])
 
   /*
+   * =====================================================
+   * 타이머 AudioContext
+   * =====================================================
+   */
+
+  const audioContextRef =
+    useRef<AudioContext | null>(null)
+
+  const alarmIntervalRef =
+    useRef<ReturnType<typeof setInterval> | null>(null)
+
+  /*
    * AudioContext 준비
-   *
-   * 브라우저의 자동재생 제한 때문에
-   * 사용자가 시작 버튼을 누른 순간 준비한다.
    */
   const prepareAudio = () => {
     if (!audioContextRef.current) {
@@ -208,9 +314,13 @@ export default function TimerWindow() {
   }, [])
 
   /*
-   * 타이머
+   * =====================================================
+   * 타이머 카운트다운
+   * =====================================================
    */
+
   useEffect(() => {
+    if (isAlarm) return
     if (!running) return
 
     const endTime =
@@ -240,11 +350,14 @@ export default function TimerWindow() {
     return () =>
       clearInterval(interval)
 
-  }, [running])
+  }, [running, isAlarm])
 
   /*
-   * 시간 설정
+   * =====================================================
+   * 타이머 시간 설정
+   * =====================================================
    */
+
   const applyTime = () => {
     const hours =
       Math.max(
@@ -285,6 +398,7 @@ export default function TimerWindow() {
     stopAlarm()
 
     setRunning(false)
+
     setRemainingSeconds(
       totalSeconds
     )
@@ -295,8 +409,11 @@ export default function TimerWindow() {
   }
 
   /*
-   * 시작 / 일시정지
+   * =====================================================
+   * 타이머 시작 / 일시정지
+   * =====================================================
    */
+
   const toggleRunning = () => {
     prepareAudio()
 
@@ -315,10 +432,14 @@ export default function TimerWindow() {
   }
 
   /*
-   * 초기화
+   * =====================================================
+   * 타이머 초기화
+   * =====================================================
    */
-  const reset = () => {
+
+  const resetTimer = () => {
     stopAlarm()
+
     setRunning(false)
 
     const totalSeconds =
@@ -332,31 +453,288 @@ export default function TimerWindow() {
   }
 
   /*
-   * 시:분:초 계산
+   * =====================================================
+   * 스톱워치 실행
+   * =====================================================
    */
-  const hours = Math.floor(
+
+  useEffect(() => {
+    if (!isAlarm) return
+    if (!stopwatchRunning) return
+
+    /*
+     * 현재 실행 구간 시작
+     */
+    stopwatchStartRef.current =
+      Date.now()
+
+    const interval =
+      setInterval(() => {
+        if (
+          stopwatchStartRef.current ===
+          null
+        ) {
+          return
+        }
+
+        /*
+         * 누적된 이전 시간 +
+         * 현재 실행 구간 시간
+         */
+        const elapsed =
+          stopwatchElapsedRef.current +
+          (
+            Date.now() -
+            stopwatchStartRef.current
+          )
+
+        /*
+         * 밀리초 그대로 저장
+         */
+        setStopwatchMilliseconds(
+          elapsed
+        )
+      }, 50)
+
+    return () => {
+      clearInterval(interval)
+    }
+
+  }, [
+    stopwatchRunning,
+    isAlarm
+  ])
+
+  /*
+   * =====================================================
+   * 스톱워치 시작 / 계속
+   * =====================================================
+   */
+
+  const startStopwatch = () => {
+    if (
+      stopwatchStartRef.current ===
+      null
+    ) {
+      stopwatchStartRef.current =
+        Date.now()
+    }
+
+    setStopwatchStarted(true)
+    setStopwatchRunning(true)
+  }
+
+  /*
+   * =====================================================
+   * 스톱워치 중지
+   * =====================================================
+   */
+
+  const stopStopwatch = () => {
+    if (
+      stopwatchStartRef.current !==
+      null
+    ) {
+      stopwatchElapsedRef.current +=
+        Date.now() -
+        stopwatchStartRef.current
+
+      stopwatchStartRef.current = null
+    }
+
+    /*
+     * 중지한 순간의 정확한 시간 표시
+     */
+    setStopwatchMilliseconds(
+      stopwatchElapsedRef.current
+    )
+
+    setStopwatchRunning(false)
+  }
+
+  /*
+   * =====================================================
+   * 구간 기록
+   * =====================================================
+   */
+
+  const recordLap = () => {
+    if (!stopwatchRunning) {
+      return
+    }
+
+    let currentElapsed =
+      stopwatchElapsedRef.current
+
+    if (
+      stopwatchStartRef.current !==
+      null
+    ) {
+      currentElapsed +=
+        Date.now() -
+        stopwatchStartRef.current
+    }
+
+    /*
+     * 버튼을 누른 순간의
+     * 밀리초 단위 시간을 저장
+     */
+    setLaps((prev) => [
+      ...prev,
+      currentElapsed
+    ])
+  }
+
+  /*
+   * =====================================================
+   * 스톱워치 초기화
+   * =====================================================
+   */
+
+  const resetStopwatch = () => {
+    setStopwatchRunning(false)
+    setStopwatchStarted(false)
+
+    setStopwatchMilliseconds(0)
+
+    setLaps([])
+
+    stopwatchElapsedRef.current = 0
+    stopwatchStartRef.current = null
+  }
+
+  /*
+   * =====================================================
+   * 최신 구간 기록으로 자동 이동
+   * =====================================================
+   */
+
+  useEffect(() => {
+    if (!isAlarm) return
+
+    const element =
+      lapsRef.current
+
+    if (!element) return
+
+    element.scrollTop =
+      element.scrollHeight
+  }, [laps, isAlarm])
+
+  /*
+   * =====================================================
+   * 타이머 표시
+   * =====================================================
+   */
+
+  const timerHours = Math.floor(
     remainingSeconds / 3600
   )
 
-  const minutes = Math.floor(
+  const timerMinutes = Math.floor(
     (remainingSeconds % 3600) / 60
   )
 
-  const seconds =
+  const timerSeconds =
     remainingSeconds % 60
 
+  const timerText =
+    String(timerHours).padStart(2, '0') +
+    ':' +
+    String(timerMinutes).padStart(2, '0') +
+    ':' +
+    String(timerSeconds).padStart(2, '0')
+
   /*
-   * 표시용 시간
-   *
-   * 예:
-   * 00:25:00
+   * =====================================================
+   * 스톱워치 표시
+   * =====================================================
    */
-  const timeText =
-    String(hours).padStart(2, '0') +
-    ':' +
-    String(minutes).padStart(2, '0') +
-    ':' +
-    String(seconds).padStart(2, '0')
+
+  const stopwatchText =
+    formatTime(
+      stopwatchMilliseconds
+    )
+
+  /*
+   * =====================================================
+   * Digital Display
+   * =====================================================
+   */
+
+  const renderDigitalTime = (
+    timeText: string
+  ) => {
+    return timeText
+      .split('')
+      .map((char, index) => {
+
+        /*
+         * 콜론
+         */
+        if (char === ':') {
+          return (
+            <Colon
+              key={index}
+            />
+          )
+        }
+
+        /*
+         * 소수점
+         */
+        if (char === '.') {
+          return (
+            <Dot
+              key={index}
+            />
+          )
+        }
+
+        /*
+         * 숫자
+         */
+        return (
+          <DigitalDigit
+            key={index}
+            value={char}
+            activeColor={
+              inverted
+                ? '#000'
+                : '#fff'
+            }
+            offColor={
+              inverted
+                ? '#f5f5f5'
+                : '#151515'
+            }
+          />
+        )
+      })
+  }
+
+  /*
+   * =====================================================
+   * 스톱워치 버튼 상태
+   * =====================================================
+   */
+
+  const stopwatchInitial =
+    !stopwatchStarted &&
+    !stopwatchRunning
+
+  const stopwatchRunningNow =
+    stopwatchRunning
+
+  const stopwatchStopped =
+    stopwatchStarted &&
+    !stopwatchRunning
+
+  /*
+   * =====================================================
+   * RENDER
+   * =====================================================
+   */
 
   return (
     <main
@@ -369,204 +747,301 @@ export default function TimerWindow() {
 
       <h1>
         {isAlarm
-          ? '🔔 알람'
+          ? '⏱️ 스톱워치'
           : '⏱️ 타이머'}{' '}
         {id}
       </h1>
 
 
-      {/* =========================
-          Digital Display
-          ========================= */}
+      {/* =================================================
+          STOPWATCH
+          ================================================= */}
 
-      <div className="digital-display">
+      {isAlarm ? (
 
-        {timeText
-          .split('')
-          .map((char, index) => {
-
-            if (char === ':') {
-              return (
-                <Colon
-                  key={index}
-                />
-              )
-            }
-
-            return (
-              <DigitalDigit
-                key={index}
-                value={char}
-                activeColor={
-                  inverted
-                    ? '#000'
-                    : '#fff'
-                }
-                offColor={
-                  inverted
-                    ? '#e5e5e5'
-                    : '#151515'
-                }
-              />
-            )
-          })}
-
-      </div>
-
-
-      {/* =========================
-          종료 알람
-          ========================= */}
-
-      {alarmOn && (
-        <div className="timer-alarm">
-
-          <div className="timer-alarm-message">
-            🔔 시간 종료
-          </div>
-
-          <button
-            className="action-button alarm-stop-button"
-            onClick={stopAlarm}
-          >
-            알람 끄기
-          </button>
-
-        </div>
-      )}
-
-
-      {/* =========================
-          Controls
-          ========================= */}
-
-      {!isAlarm && !alarmOn && (
         <>
-          <div className="timer-controls">
+          {/* 메인 시간 */}
 
-            <button
-              className="action-button"
-              onClick={
-                toggleRunning
-              }
-            >
-              {running
-                ? '일시정지'
-                : '시작'}
-            </button>
-
-
-            <button
-              className="action-button"
-              onClick={reset}
-            >
-              초기화
-            </button>
-
-
-            <button
-              className="action-button"
-              onClick={() =>
-                setInverted(
-                  (prev) => !prev
-                )
-              }
-            >
-              {inverted
-                ? '백흑'
-                : '흑백'}
-            </button>
-
+          <div className="digital-display stopwatch-main-display">
+            {renderDigitalTime(stopwatchText)}
           </div>
 
 
-          {/* =========================
-              시간 설정
-              ========================= */}
+          {/* 기록 + 버튼 영역 */}
 
-          <div className="timer-settings">
+          <div className="stopwatch-content">
 
-            <span className="timer-settings-title">
-              시간 설정
-            </span>
+            {/* 구간 기록 */}
 
-            <div className="timer-inputs">
+            <div
+              ref={lapsRef}
+              className="stopwatch-laps"
+            >
+              {laps.map((lap, index) => (
+                <div
+                  className="stopwatch-lap"
+                  key={index}
+                >
+                  <span>
+                    구간 {index + 1}
+                  </span>
 
-              <input
-                type="number"
-                min="0"
-                max="99"
-                value={setHours}
-                onChange={(e) =>
-                  setSetHours(
-                    Math.max(
-                      0,
-                      Math.min(
-                        99,
-                        Number(
-                          e.target.value
-                        ) || 0
-                      )
-                    )
-                  )
-                }
-              />
+                  <span className="stopwatch-lap-time">
+                    {formatTime(lap)}
+                  </span>
+                </div>
+              ))}
+            </div>
 
-              <span>:</span>
 
-              <input
-                type="number"
-                min="0"
-                max="59"
-                value={setMinutes}
-                onChange={(e) =>
-                  setSetMinutes(
-                    Math.max(
-                      0,
-                      Math.min(
-                        59,
-                        Number(
-                          e.target.value
-                        ) || 0
-                      )
-                    )
-                  )
-                }
-              />
+            {/* 오른쪽 버튼 */}
 
-              <span>:</span>
+            <div className="stopwatch-side-controls">
 
-              <input
-                type="number"
-                min="0"
-                max="59"
-                value={setSeconds}
-                onChange={(e) =>
-                  setSetSeconds(
-                    Math.max(
-                      0,
-                      Math.min(
-                        59,
-                        Number(
-                          e.target.value
-                        ) || 0
-                      )
-                    )
-                  )
-                }
-                
-              />
+              {stopwatchInitial && (
+                <>
+                  <button
+                    className="action-button"
+                    disabled
+                  >
+                    구간기록
+                  </button>
+
+                  <button
+                    className="action-button"
+                    onClick={startStopwatch}
+                  >
+                    시작
+                  </button>
+                </>
+              )}
+
+              {stopwatchRunningNow && (
+                <>
+                  <button
+                    className="action-button"
+                    onClick={recordLap}
+                  >
+                    구간기록
+                  </button>
+
+                  <button
+                    className="action-button"
+                    onClick={stopStopwatch}
+                  >
+                    중지
+                  </button>
+                </>
+              )}
+
+              {stopwatchStopped && (
+                <>
+                  <button
+                    className="action-button"
+                    onClick={resetStopwatch}
+                  >
+                    초기화
+                  </button>
+
+                  <button
+                    className="action-button"
+                    onClick={startStopwatch}
+                  >
+                    계속
+                  </button>
+                </>
+              )}
+
+              {/* 흑백 */}
 
               <button
-                className="action-button"
-                onClick={applyTime}
+                className="action-button stopwatch-invert-button"
+                onClick={() =>
+                  setInverted((prev) => !prev)
+                }
               >
-                설정
+                {inverted ? '백흑' : '흑백'}
               </button>
 
             </div>
 
           </div>
+        </>
+
+      ) : (
+
+        /* =================================================
+           TIMER
+           ================================================= */
+
+        <>
+
+          {/* Digital Display */}
+
+          <div className="digital-display">
+
+            {renderDigitalTime(
+              timerText
+            )}
+
+          </div>
+
+
+          {/* 종료 알람 */}
+
+          {alarmOn && (
+            <div className="timer-alarm">
+
+              <div className="timer-alarm-message">
+                🔔 시간 종료
+              </div>
+
+              <button
+                className="action-button alarm-stop-button"
+                onClick={stopAlarm}
+              >
+                알람 끄기
+              </button>
+
+            </div>
+          )}
+
+
+          {/* Controls */}
+
+          {!alarmOn && (
+            <>
+
+              <div className="timer-controls">
+
+                <button
+                  className="action-button"
+                  onClick={
+                    toggleRunning
+                  }
+                >
+                  {running
+                    ? '일시정지'
+                    : '시작'}
+                </button>
+
+
+                <button
+                  className="action-button"
+                  onClick={
+                    resetTimer
+                  }
+                >
+                  초기화
+                </button>
+
+
+                <button
+                  className="action-button"
+                  onClick={() =>
+                    setInverted(
+                      (prev) => !prev
+                    )
+                  }
+                >
+                  {inverted
+                    ? '백흑'
+                    : '흑백'}
+                </button>
+
+              </div>
+
+
+              {/* 시간 설정 */}
+
+              <div className="timer-settings">
+
+                <span className="timer-settings-title">
+                  시간 설정
+                </span>
+
+                <div className="timer-inputs">
+
+                  <input
+                    type="number"
+                    min="0"
+                    max="99"
+                    value={setHours}
+                    onChange={(e) =>
+                      setSetHours(
+                        Math.max(
+                          0,
+                          Math.min(
+                            99,
+                            Number(
+                              e.target.value
+                            ) || 0
+                          )
+                        )
+                      )
+                    }
+                  />
+
+                  <span>:</span>
+
+                  <input
+                    type="number"
+                    min="0"
+                    max="59"
+                    value={setMinutes}
+                    onChange={(e) =>
+                      setSetMinutes(
+                        Math.max(
+                          0,
+                          Math.min(
+                            59,
+                            Number(
+                              e.target.value
+                            ) || 0
+                          )
+                        )
+                      )
+                    }
+                  />
+
+                  <span>:</span>
+
+                  <input
+                    type="number"
+                    min="0"
+                    max="59"
+                    value={setSeconds}
+                    onChange={(e) =>
+                      setSetSeconds(
+                        Math.max(
+                          0,
+                          Math.min(
+                            59,
+                            Number(
+                              e.target.value
+                            ) || 0
+                          )
+                        )
+                      )
+                    }
+                  />
+
+                  <button
+                    className="action-button"
+                    onClick={
+                      applyTime
+                    }
+                  >
+                    설정
+                  </button>
+
+                </div>
+
+              </div>
+
+            </>
+          )}
+
         </>
       )}
 

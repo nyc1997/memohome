@@ -1230,6 +1230,447 @@
     font-weight: bold;
   }
 
+  /*  *******************  스톱워치    */
+  /* =========================
+     TIMER WINDOW
+     ========================= */
+
+  .timer-window {
+    box-sizing: border-box;
+
+    width: 100%;
+    height: 100vh;
+
+    min-width: 360px;
+    min-height: 220px;
+
+    padding: 25px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    background: #000;
+    color: #fff;
+  }
+
+
+  /* =========================
+     TITLE
+     ========================= */
+
+  .timer-window h1 {
+    margin: 0;
+
+    color: #fff;
+
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+
+  /* =========================
+     DSEG7
+     ========================= */
+
+  @font-face {
+    font-family: 'DSEG7';
+    src: url('/fonts/DSEG7Classic-Regular.woff2')
+      format('woff2');
+
+    font-weight: normal;
+    font-style: normal;
+  }
+
+
+  /* =========================
+     기존 Digital Time
+     ========================= */
+
+  .digital-time {
+    font-family: 'DSEG7', monospace;
+
+    font-size: clamp(80px, 18vw, 280px);
+    line-height: 1;
+
+    letter-spacing: 0;
+
+    color: #fff;
+    background: #000;
+  }
+
+
+  /* =========================
+     Digital Digit SVG
+     ========================= */
+
+  .digital-digit-svg {
+    display: block;
+
+    width: min(12vw, 18vh);
+    height: auto;
+
+    flex: 1 1 0;
+    min-width: 0;
+
+    max-width: 180px;
+  }
+
+
+  /* 실제 켜진 세그먼트 */
+
+  .digital-segment {
+    transition:
+      opacity 0.08s ease;
+  }
+
+
+  /* =========================
+     Digital Display
+     ========================= */
+
+  .digital-display {
+    width: 100%;
+
+    flex: 1;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: clamp(4px, 0.8vw, 12px);
+
+    margin: 15px 0;
+
+    overflow: hidden;
+  }
+
+
+  /* =========================
+     반전 모드
+     ========================= */
+
+  .timer-window.inverted .action-button {
+    color: #000;
+
+    background: #fff;
+
+    border: 1px solid #999;
+  }
+
+  .timer-window.inverted .action-button:hover {
+    background: #eee;
+  }
+
+
+  /* =================================================
+     STOPWATCH
+     ================================================= */
+
+
+  /* 메인 스톱워치 숫자 */
+
+  .stopwatch-main-display {
+    width: 100%;
+
+    flex: 1;
+
+    min-height: 0;
+
+    margin: 15px 0;
+  }
+
+
+  /* =================================================
+     기록 + 버튼 전체 영역
+     ================================================= */
+
+  .stopwatch-content {
+    width: min(900px, 100%);
+
+    flex: 1;
+
+    min-height: 0;
+
+    display: flex;
+    align-items: center;
+
+    margin: 0;
+  }
+
+
+  /* =================================================
+     구간 기록
+     ================================================= */
+
+  .stopwatch-laps {
+    flex: 1;
+
+    width: 100%;
+
+    height: 160px;
+    min-height: 160px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    padding: 0;
+
+    box-sizing: border-box;
+
+    /*
+     * 스크롤은 가능하지만
+     * 스크롤바는 표시하지 않는다.
+     */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .stopwatch-laps::-webkit-scrollbar {
+    display: none;
+  }
+
+
+  /* =================================================
+     구간 기록 한 줄
+     ================================================= */
+
+  .stopwatch-lap {
+    width: 100%;
+
+    height: 32px;
+    min-height: 32px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 20px;
+
+    box-sizing: border-box;
+
+    font-size: 18px;
+
+    color: #fff;
+  }
+
+  .stopwatch-lap-time {
+    font-family: 'DSEG7', monospace;
+
+    font-size: 18px;
+
+    white-space: nowrap;
+  }
+
+
+  /* =================================================
+     스톱워치 버튼 묶음
+     ================================================= */
+
+  .stopwatch-side-controls {
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+
+    height: 42px;
+
+    margin-left: 10px;
+
+    flex-shrink: 0;
+  }
+
+
+  /* 네모 버튼 */
+
+  .stopwatch-side-controls .action-button {
+    flex-shrink: 0;
+
+    white-space: nowrap;
+
+    margin: 0;
+  }
+
+
+  /* =================================================
+     흑백 원형 버튼
+     ================================================= */
+
+  .stopwatch-side-controls
+  .stopwatch-invert-button {
+    width: 42px;
+    height: 42px;
+
+    min-width: 42px;
+    min-height: 42px;
+
+    flex: 0 0 42px;
+
+    padding: 0;
+    margin: 0;
+
+    box-sizing: border-box;
+
+    border-radius: 50%;
+
+    border: 1px solid #888;
+
+    /*
+     * 왼쪽 검정 / 오른쪽 흰색
+     */
+
+    background:
+      linear-gradient(
+        90deg,
+        #000 0%,
+        #000 50%,
+        #fff 50%,
+        #fff 100%
+      );
+
+    /*
+     * 글자는 숨김
+     * 원 자체가 버튼 표시
+     */
+
+    color: transparent;
+    font-size: 0;
+  }
+
+
+  /* 반전 모드에서도 동일한 원 */
+
+  .timer-window.inverted
+  .stopwatch-side-controls
+  .stopwatch-invert-button {
+    width: 42px;
+    height: 42px;
+
+    min-width: 42px;
+    min-height: 42px;
+
+    flex: 0 0 42px;
+
+    padding: 0;
+    margin: 0;
+
+    border-radius: 50%;
+
+    background:
+      linear-gradient(
+        90deg,
+        #000 0%,
+        #000 50%,
+        #fff 50%,
+        #fff 100%
+      );
+  }
+
+
+  /* =================================================
+     스톱워치 반전 시 기록 글자
+     ================================================= */
+
+  .timer-window.inverted
+  .stopwatch-lap {
+    color: #000;
+  }
+
+
+  /* =================================================
+     알람
+     ================================================= */
+
+  .timer-alarm {
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    gap: 15px;
+
+    margin-top: 20px;
+  }
+
+  .timer-alarm-message {
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  .alarm-stop-button {
+    min-width: 100px;
+  }
+
+
+  /* =================================================
+     타이머 버튼
+     ================================================= */
+
+  .timer-controls {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 10px;
+
+    margin-top: 10px;
+  }
+
+
+  /* =================================================
+     타이머 시간 설정
+     ================================================= */
+
+  .timer-settings {
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    gap: 10px;
+
+    margin-top: 15px;
+  }
+
+  .timer-settings-title {
+    font-size: 14px;
+  }
+
+  .timer-inputs {
+    display: flex;
+
+    align-items: center;
+
+    gap: 5px;
+  }
+
+  .timer-inputs input {
+    width: 55px;
+    height: 36px;
+
+    box-sizing: border-box;
+
+    padding: 0 5px;
+
+    text-align: center;
+
+    border: 1px solid #ccc;
+    border-radius: 5px;
+
+    font-size: 16px;
+  }
+
+
+  /* =================================================
+     공통 버튼
+     ================================================= */
+
+  button {
+    cursor: pointer;
+  }
+
 /* *****************************  body  area */
 
   button {
