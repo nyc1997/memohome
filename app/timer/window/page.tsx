@@ -1,7 +1,7 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
 
 import DigitalDigit from '../../../components/DigitalDigit'
 
@@ -56,7 +56,7 @@ function formatTime(totalMilliseconds: number) {
   )
 }
 
-export default function TimerWindow() {
+function TimerWindowContent() {
   const searchParams = useSearchParams()
 
   const type = searchParams.get('type')
@@ -1046,5 +1046,13 @@ export default function TimerWindow() {
       )}
 
     </main>
+  )
+}
+
+export default function TimerWindow() {
+  return (
+    <Suspense fallback={null}>
+      <TimerWindowContent />
+    </Suspense>
   )
 }
