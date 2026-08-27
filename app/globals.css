@@ -853,6 +853,385 @@
     transform: scale(1.05);
   }
 
+  /* ************************************* 타이머/ 알람   */
+  /* =========================
+   TIMER WINDOW
+   ========================= */
+
+  .timer-window {
+    box-sizing: border-box;
+
+    width: 100%;
+    height: 100vh;
+
+    min-width: 360px;
+    min-height: 220px;
+
+    padding: 25px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    background: #000;
+    color: #fff;
+  }
+
+
+  /* =========================
+     TITLE
+     ========================= */
+
+  .timer-window h1 {
+    margin: 0;
+
+    color: #fff;
+
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+
+   @font-face {
+    font-family: 'DSEG7';
+    src: url('/fonts/DSEG7Classic-Regular.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+  }
+
+  .digital-time {
+    font-family: 'DSEG7', monospace;
+
+    font-size: clamp(80px, 18vw, 280px);
+    line-height: 1;
+
+    letter-spacing: 0;
+
+    color: #fff;
+    background: #000;
+  }
+
+
+  /* 반전 버튼 */
+
+  /* =========================
+   TIMER WINDOW
+   ========================= */
+
+.timer-window {
+  box-sizing: border-box;
+
+  width: 100%;
+  height: 100vh;
+
+  min-width: 360px;
+  min-height: 220px;
+
+  padding: 25px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  background: #000;
+  color: #fff;
+}
+
+
+/* =========================
+   INVERTED
+   ========================= */
+
+.timer-window.inverted {
+  background: #fff;
+  color: #000;
+}
+
+.timer-window.inverted h1 {
+  color: #000;
+}
+
+
+/* 반전 상태 버튼 */
+
+.timer-window.inverted .action-button {
+  color: #000;
+  background: #fff;
+  border: 1px solid #999;
+}
+
+.timer-window.inverted .action-button:hover {
+  background: #eee;
+}
+
+
+/* =========================
+   Digital Display
+   ========================= */
+
+.digital-display {
+  width: 100%;
+  flex: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: clamp(4px, 0.8vw, 12px);
+
+  margin: 15px 0;
+
+  overflow: hidden;
+}
+
+
+/* =========================
+   Digital Digit
+   ========================= */
+
+.digital-digit-svg {
+  display: block;
+
+  width: min(12vw, 18vh);
+  height: auto;
+
+  flex: 1 1 0;
+  min-width: 0;
+
+  max-width: 180px;
+}
+
+
+/* 실제 켜진 세그먼트 */
+
+.digital-segment {
+  transition: opacity 0.08s ease;
+}
+
+
+/* =========================
+   COLON
+   ========================= */
+
+.segment-colon {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  gap: clamp(10px, 2vh, 22px);
+
+  flex: 0 0 auto;
+
+  width: clamp(12px, 2vw, 28px);
+
+  height: min(12vw, 18vh);
+}
+
+.segment-colon span {
+  display: block;
+
+  width: clamp(8px, 1.2vw, 18px);
+  aspect-ratio: 1;
+
+  border-radius: 50%;
+
+  background: #fff;
+}
+
+
+/* 흑백 상태의 콜론 */
+
+.timer-window.inverted .segment-colon span {
+  background: #000;
+}
+
+
+  .timer-window.inverted .action-button:hover {
+    background: #eee;
+  }
+
+  /* =========================
+   SVG Digital Digit
+   ========================= */
+
+  .digital-digit-svg {
+    display: block;
+
+    width: min(12vw, 18vh);
+    height: auto;
+
+    flex: 1 1 0;
+    min-width: 0;
+
+    max-width: 180px;
+  }
+
+
+  /* 실제 켜진 세그먼트 */
+
+  .digital-segment {
+    transition:
+      opacity 0.08s ease;
+  }
+
+
+  /* =========================
+     Digital Display
+     ========================= */
+
+  .digital-display {
+    width: 100%;
+    flex: 1;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: clamp(4px, 0.8vw, 12px);
+
+    margin: 15px 0;
+
+    overflow: hidden;
+  }
+
+
+  /* =========================
+     Inverted
+     ========================= */
+
+  .timer-window.inverted .digital-segment {
+    /* SVG의 fill은 inline으로 지정되어 있으므로
+       여기서는 컴포넌트의 색상을 바꾸는 방식으로 처리 */
+  }
+
+  /* =========================
+   TIMER CONTROLS
+   ========================= */
+
+  .timer-controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    margin-top: 10px;
+  }
+
+
+  /* =========================
+     TIMER SETTINGS
+     ========================= */
+
+  .timer-settings {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 8px;
+
+    margin-top: 15px;
+  }
+
+  .timer-settings-title {
+    font-size: 14px;
+    color: #ccc;
+  }
+
+  .timer-inputs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 5px;
+  }
+
+  .timer-inputs input {
+    width: 55px;
+    height: 34px;
+
+    box-sizing: border-box;
+
+    padding: 0 5px;
+
+    border: 1px solid #555;
+    border-radius: 5px;
+
+    background: #111;
+    color: #fff;
+
+    text-align: center;
+    font-size: 16px;
+  }
+
+  .timer-inputs span {
+    color: #fff;
+    font-weight: bold;
+  }
+
+
+  /* 숫자 입력창의 화살표 제거 */
+
+  .timer-inputs input::-webkit-inner-spin-button,
+  .timer-inputs input::-webkit-outer-spin-button {
+    opacity: 1;
+  }
+
+
+  /* =========================
+     INVERTED SETTINGS
+     ========================= */
+
+  .timer-window.inverted .timer-settings-title {
+    color: #555;
+  }
+
+  .timer-window.inverted .timer-inputs input {
+    background: #fff;
+    color: #000;
+
+    border: 1px solid #999;
+  }
+
+  .timer-window.inverted .timer-inputs span {
+    color: #000;
+  }
+
+
+  /* =========================
+     TIMER ALARM
+     ========================= */
+
+  .timer-alarm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 12px;
+
+    margin-top: 10px;
+  }
+
+  .timer-alarm-message {
+    font-size: 22px;
+    font-weight: bold;
+
+    color: #fff;
+  }
+
+  .timer-window.inverted .timer-alarm-message {
+    color: #000;
+  }
+
+  .alarm-stop-button {
+    font-size: 16px;
+    font-weight: bold;
+  }
+
+/* *****************************  body  area */
+
   button {
     cursor: pointer;
   }

@@ -147,7 +147,13 @@ export default function Header() {
 
 
           <div className="menu-divider" />
-
+          
+          <Link
+            href="/timer"
+            onClick={closeMenu}
+          >
+            ⏱️ 타이머
+          </Link>
 
           <Link
             href="/music"
