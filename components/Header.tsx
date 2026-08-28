@@ -103,7 +103,7 @@ export default function Header() {
             href="/write"
             onClick={closeMenu}
           >
-            📝 새 기록
+            📝 write
           </Link>
 
           <Link
@@ -115,7 +115,13 @@ export default function Header() {
 
 
           <div className="menu-divider" />
-
+          
+          <Link
+            href="/unit"
+            onClick={closeMenu}
+          >
+            📐 단위변환
+          </Link>
 
           <Link
             href="/camera"
@@ -135,7 +141,7 @@ export default function Header() {
             href="/write2"
             onClick={closeMenu}
           >
-            🗺️ write2
+            🗺️ 손글씨
           </Link>
 
           <Link
