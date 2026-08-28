@@ -138,6 +138,13 @@ export default function Header() {
           </Link>
 
           <Link
+            href="tran"
+            onClick={closeMenu}
+          >
+            🌐 번역
+          </Link>
+
+          <Link
             href="/currency"
             onClick={closeMenu}
           >
