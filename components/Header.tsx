@@ -152,6 +152,13 @@ export default function Header() {
           </Link>
 
           <Link
+            href="calculator"
+            onClick={closeMenu}
+          >
+            🧮 계산기
+          </Link>
+
+          <Link
             href="/camera"
             onClick={closeMenu}
           >
