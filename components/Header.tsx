@@ -115,7 +115,35 @@ export default function Header() {
 
 
           <div className="menu-divider" />
-          
+
+          <Link
+            href="/color"
+            onClick={closeMenu}
+          >
+            🎨 컬러
+          </Link>
+
+          <Link
+            href="/screenshot"
+            onClick={closeMenu}
+          >
+            📸 스크린샷
+          </Link>
+
+          <Link
+            href="/capture"
+            onClick={closeMenu}
+          >
+            📸 화면 캡처
+          </Link>
+
+          <Link
+            href="/currency"
+            onClick={closeMenu}
+          >
+            💱 환율
+          </Link>
+
           <Link
             href="/unit"
             onClick={closeMenu}
@@ -128,6 +156,13 @@ export default function Header() {
             onClick={closeMenu}
           >
             📷 카메라
+          </Link>
+
+          <Link
+            href="/piano"
+            onClick={closeMenu}
+          >
+            🎹 건반
           </Link>
 
           <Link
