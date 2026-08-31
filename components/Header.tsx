@@ -19,13 +19,21 @@ export default function Header() {
       handleKeyDown
     )
 
+    // 사이드 메뉴가 열려 있으면
+    // 메인 페이지 스크롤 잠금
+    document.body.style.overflow =
+      isOpen ? 'hidden' : ''
+
     return () => {
       window.removeEventListener(
         'keydown',
         handleKeyDown
       )
+
+      document.body.style.overflow = ''
     }
-  }, [])
+  }, [isOpen])
+
 
   // 메뉴 클릭하면 닫기
   const closeMenu = () => {

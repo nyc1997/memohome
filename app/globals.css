@@ -748,6 +748,14 @@
       rgba(0, 0, 0, 0.5);
 
     overflow-y: auto;
+
+    /* 스크롤바 숨김 */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .sidebar::-webkit-scrollbar {
+    display: none;
   }
 
   .sidebar.open {
