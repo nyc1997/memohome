@@ -8,11 +8,70 @@ type NoteCardProps = {
   number: number
 }
 
-export default function NoteCard({ note, number }: NoteCardProps) {
+function LinkifyText({
+  text,
+}: {
+  text: string
+}) {
+  const urlRegex =
+    /(https?:\/\/[^\s]+)/g
 
-  const isImage = note.file_url?.match(
-    /\.(jpg|jpeg|png|gif|webp|bmp)$/i
+  const parts = text.split(urlRegex)
+
+  return (
+    <>
+      {parts.map((part, index) => {
+
+        if (
+          part.startsWith('http://') ||
+          part.startsWith('https://')
+        ) {
+          // URL 뒤에 붙은 문장부호 분리
+          const match =
+            part.match(/^(.+?)([.,!?;:)]*)$/)
+
+          const url = match?.[1] || part
+          const punctuation =
+            match?.[2] || ''
+
+          return (
+            <span key={index}>
+
+              🔗{' '}
+
+              <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {url}
+              </a>
+
+              {punctuation}
+
+            </span>
+          )
+        }
+
+        return (
+          <span key={index}>
+            {part}
+          </span>
+        )
+      })}
+    </>
   )
+}
+
+export default function NoteCard({
+  note,
+  number,
+}: NoteCardProps) {
+
+  const isImage =
+    note.file_url?.match(
+      /\.(jpg|jpeg|png|gif|webp|bmp)$/i
+    )
 
   return (
     <article className="note-card">
@@ -28,7 +87,9 @@ export default function NoteCard({ note, number }: NoteCardProps) {
       </div>
 
       <p>
-        {note.content}
+        <LinkifyText
+          text={note.content || ''}
+        />
       </p>
 
       {note.file_url && (
@@ -48,7 +109,9 @@ export default function NoteCard({ note, number }: NoteCardProps) {
       )}
 
       <small>
-        {new Date(note.created_at).toLocaleString()}
+        {new Date(
+          note.created_at
+        ).toLocaleString()}
       </small>
 
     </article>
