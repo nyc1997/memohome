@@ -168,6 +168,20 @@
       white-space: pre-wrap;
     }
 
+    /* 카드 미리보여줄 라인 */
+    .note-preview {
+      display: -webkit-box;
+      -webkit-line-clamp: 5;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .note-attachment img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
    
 /* 검색 박스 */
 

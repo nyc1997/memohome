@@ -1,6 +1,4 @@
-
 import Link from 'next/link'
-
 import AttachmentImage from '../app/notes/edit/AttachmentImage'
 
 type NoteCardProps = {
@@ -26,7 +24,6 @@ function LinkifyText({
           part.startsWith('http://') ||
           part.startsWith('https://')
         ) {
-          // URL 뒤에 붙은 문장부호 분리
           const match =
             part.match(/^(.+?)([.,!?;:)]*)$/)
 
@@ -36,9 +33,7 @@ function LinkifyText({
 
           return (
             <span key={index}>
-
               🔗{' '}
-
               <a
                 href={url}
                 target="_blank"
@@ -46,9 +41,7 @@ function LinkifyText({
               >
                 {url}
               </a>
-
               {punctuation}
-
             </span>
           )
         }
@@ -76,22 +69,7 @@ export default function NoteCard({
   return (
     <article className="note-card">
 
-      <h2>
-        <Link href={`/notes/${note.id}`}>
-          {number}. {note.title}
-        </Link>
-      </h2>
-
-      <div className="note-category">
-        📁 {note.categories?.name}
-      </div>
-
-      <p>
-        <LinkifyText
-          text={note.content || ''}
-        />
-      </p>
-
+      {/* 이미지 */}
       {note.file_url && (
         <div className="note-attachment">
 
@@ -108,6 +86,26 @@ export default function NoteCard({
         </div>
       )}
 
+      {/* 제목 */}
+      <h2>
+        <Link href={`/notes/${note.id}`}>
+          {number}. {note.title}
+        </Link>
+      </h2>
+
+      {/* 카테고리 */}
+      <div className="note-category">
+        📁 {note.categories?.name}
+      </div>
+
+      {/* 내용 - 최대 7줄 */}
+      <p className="note-preview">
+        <LinkifyText
+          text={note.content || ''}
+        />
+      </p>
+
+      {/* 작성일 */}
       <small>
         {new Date(
           note.created_at
@@ -117,4 +115,3 @@ export default function NoteCard({
     </article>
   )
 }
-
