@@ -1,3 +1,4 @@
+
 'use client'
 
 import { useState } from 'react'
@@ -54,6 +55,55 @@ function rgbToCmyk(
   }
 }
 
+// CMYK → RGB
+function cmykToRgb(
+  c: number,
+  m: number,
+  y: number,
+  k: number
+) {
+  const c1 = c / 100
+  const m1 = m / 100
+  const y1 = y / 100
+  const k1 = k / 100
+
+  const r = Math.round(
+    255 * (1 - c1) * (1 - k1)
+  )
+
+  const g = Math.round(
+    255 * (1 - m1) * (1 - k1)
+  )
+
+  const b = Math.round(
+    255 * (1 - y1) * (1 - k1)
+  )
+
+  return {
+    r,
+    g,
+    b,
+  }
+}
+
+function rgbToHex(
+  r: number,
+  g: number,
+  b: number
+) {
+  return (
+    '#' +
+    [r, g, b]
+      .map(value =>
+        value
+          .toString(16)
+          .padStart(2, '0')
+      )
+      .join('')
+      .toUpperCase()
+  )
+}
+
 export default function ColorPage() {
   const [color, setColor] =
     useState('#4285F4')
@@ -63,6 +113,14 @@ export default function ColorPage() {
 
   const [rgb, setRgb] =
     useState('66, 133, 244')
+
+  const [cmykInput, setCmykInput] =
+    useState({
+      c: 73,
+      m: 45,
+      y: 0,
+      k: 4,
+    })
 
   // 컬러 피커 / 스포이드에서 색상 변경
   const handleColorChange = (
@@ -91,6 +149,10 @@ export default function ColorPage() {
 
     setRgb(
       `${r}, ${g}, ${b}`
+    )
+
+    setCmykInput(
+      rgbToCmyk(r, g, b)
     )
   }
 
@@ -151,7 +213,7 @@ export default function ColorPage() {
 
       try {
         const eyeDropper =
-          new window.EyeDropper()
+          await new window.EyeDropper()
 
         const result =
           await eyeDropper.open()
@@ -163,6 +225,76 @@ export default function ColorPage() {
         // ESC로 취소
       }
     }
+
+  // CMYK 입력값 변경
+  const handleCmykInputChange = (
+    key: 'c' | 'm' | 'y' | 'k',
+    value: string
+  ) => {
+    const numericValue =
+      value.replace(
+        /[^0-9]/g,
+        ''
+      )
+
+    if (numericValue === '') {
+      setCmykInput(prev => ({
+        ...prev,
+        [key]: 0,
+      }))
+
+      return
+    }
+
+    const number =
+      Math.min(
+        100,
+        Math.max(
+          0,
+          Number(numericValue)
+        )
+      )
+
+    setCmykInput(prev => ({
+      ...prev,
+      [key]: number,
+    }))
+  }
+
+  // CMYK → 색상 적용
+  const applyCmyk = () => {
+    const {
+      c,
+      m,
+      y,
+      k,
+    } = cmykInput
+
+    const {
+      r,
+      g,
+      b,
+    } = cmykToRgb(
+      c,
+      m,
+      y,
+      k
+    )
+
+    const newHex =
+      rgbToHex(
+        r,
+        g,
+        b
+      )
+
+    setColor(newHex)
+    setHex(newHex)
+
+    setRgb(
+      `${r}, ${g}, ${b}`
+    )
+  }
 
   // 현재 HEX → CMYK
   const r = parseInt(
@@ -179,9 +311,6 @@ export default function ColorPage() {
     color.slice(5, 7),
     16
   )
-
-  const cmyk =
-    rgbToCmyk(r, g, b)
 
   // 축약 HEX
   const shortHex =
@@ -446,23 +575,83 @@ export default function ColorPage() {
             gap: '14px',
           }}
         >
-          <input
-            type="text"
-            value={`${cmyk.c}%, ${cmyk.m}%, ${cmyk.y}%, ${cmyk.k}%`}
-            readOnly
-            spellCheck={false}
+          <div
             style={{
+              display: 'flex',
+              gap: '6px',
               flex: 1,
               minWidth: 0,
-              boxSizing: 'border-box',
-              padding: '13px',
-              fontSize: '18px',
-              fontFamily: 'monospace',
-              border: '1px solid #ddd',
-              borderRadius: '8px',
-              background: '#f8f8f8',
             }}
-          />
+          >
+            {(
+              [
+                ['c', 'C'],
+                ['m', 'M'],
+                ['y', 'Y'],
+                ['k', 'K'],
+              ] as const
+            ).map(([key, label]) => (
+              <div
+                key={key}
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: '11px',
+                    marginBottom: '4px',
+                    textAlign: 'center',
+                  }}
+                >
+                  {label}
+                </div>
+
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={
+                    cmykInput[key]
+                  }
+                  onChange={e =>
+                    handleCmykInputChange(
+                      key,
+                      e.target.value
+                    )
+                  }
+                  onBlur={
+                    applyCmyk
+                  }
+                  onKeyDown={e => {
+                    if (
+                      e.key ===
+                      'Enter'
+                    ) {
+                      applyCmyk()
+                    }
+                  }}
+                  style={{
+                    width: '100%',
+                    boxSizing:
+                      'border-box',
+                    padding:
+                      '13px 8px',
+                    fontSize:
+                      '18px',
+                    fontFamily:
+                      'monospace',
+                    textAlign:
+                      'center',
+                    border:
+                      '1px solid #ddd',
+                    borderRadius:
+                      '8px',
+                  }}
+                />
+              </div>
+            ))}
+          </div>
 
           <div
             style={{
@@ -474,7 +663,11 @@ export default function ColorPage() {
           >
             <span>
               C(
-              <span style={{ color: '#00AEEF' }}>
+              <span
+                style={{
+                  color: '#00AEEF',
+                }}
+              >
                 cyan
               </span>
               ){' '}
@@ -482,7 +675,11 @@ export default function ColorPage() {
 
             <span>
               M(
-              <span style={{ color: '#EC008C' }}>
+              <span
+                style={{
+                  color: '#EC008C',
+                }}
+              >
                 magenta
               </span>
               ){' '}
@@ -490,7 +687,11 @@ export default function ColorPage() {
 
             <span>
               Y(
-              <span style={{ color: '#D8C900' }}>
+              <span
+                style={{
+                  color: '#D8C900',
+                }}
+              >
                 yellow
               </span>
               ){' '}
@@ -498,15 +699,19 @@ export default function ColorPage() {
 
             <span>
               K(
-              <span style={{ color: '#111' }}>
+              <span
+                style={{
+                  color: '#111',
+                }}
+              >
                 black
               </span>
               )
             </span>
           </div>
-          
         </div>
       </div>
     </main>
   )
 }
+
