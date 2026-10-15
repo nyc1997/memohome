@@ -146,6 +146,14 @@ export default function Header() {
           </Link>
 
           <Link
+            href="devtools"
+            onClick={closeMenu}
+          >
+            🛠️ 개발도구
+          </Link>
+
+
+          <Link
             href="tran"
             onClick={closeMenu}
           >
